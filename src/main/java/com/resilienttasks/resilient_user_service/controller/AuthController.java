@@ -11,16 +11,19 @@ import com.resilienttasks.resilient_user_service.dto.auth.RegisterRequest;
 import com.resilienttasks.resilient_user_service.service.UserService;
 import com.resilienttasks.resilient_user_service.config.JwtUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import com.resilienttasks.resilient_user_service.service.AuthService;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
     private final UserService userService;
     private final JwtUtils jwtUtils;
+    private final AuthService authService;
 
-    public AuthController(UserService userService, JwtUtils jwtUtils) {
+    public AuthController(UserService userService, JwtUtils jwtUtils, AuthService authService) {
         this.userService = userService;
         this.jwtUtils = jwtUtils;
+        this.authService = authService;
     }
 
     @GetMapping("/ping")
@@ -30,13 +33,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok(AuthResponse.builder().token("User service is alive!").build());
+        AuthResponse authResponse = authService.login(loginRequest);
+        return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest registerRequest) {
-        var user = userService.registerUser(registerRequest);
-        String token = jwtUtils.generateToken(user.getEmail());
-        return ResponseEntity.ok(AuthResponse.builder().token(token).build());
+        AuthResponse authResponse = authService.register(registerRequest);
+        return ResponseEntity.ok(authResponse);
     }
 }

@@ -8,8 +8,10 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import lombok.Getter;
 
 @Component
+@Getter
 public class JwtUtils {
 
     private final String SECRET = "resilienttasksresilienttasksresilienttasks"; // mínimo 256 bits

@@ -5,6 +5,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.List;
+import java.util.ArrayList;
 
 @Repository("InMemoryUserRepository")
 public class InMemoryUserRepository implements UserRepository {
@@ -23,5 +25,10 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public User findByEmail(String email) {
         return users.get(email);
+    }
+
+    @Override
+    public List<User> findAll() {
+        return new ArrayList<>(users.values());
     }
 } 

@@ -6,6 +6,7 @@ import com.resilienttasks.resilient_user_service.dto.auth.RegisterRequest;
 import com.resilienttasks.resilient_user_service.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Qualifier;
+import com.resilienttasks.resilient_user_service.exception.NotFoundException;
 
 @Service
 public class UserService {
@@ -15,22 +16,22 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User registerUser(RegisterRequest request) {
-        if (userRepository.findByEmail(request.getEmail()) != null) {
-            throw new RuntimeException("User already exists with email: " + request.getEmail());
-        }
-        User user = new User();
-        user.setName(request.getName());
-        user.setLastName(request.getLastName());
-        user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
-        user.setRole("USER");
-        user.setCreatedAt(String.valueOf(System.currentTimeMillis()));
-        user.setUpdatedAt(String.valueOf(System.currentTimeMillis()));
-        return userRepository.save(user);
+    public void createUser(User user) {
+        userRepository.save(user);
     }
 
     public List<User> getAllUsers() {
-        return null;
+        return userRepository.findAll();
+    }
+
+    public User findByEmail(String email) {
+        if (email == null) {
+            throw new IllegalArgumentException("Email cannot be null");
+        }
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new NotFoundException("User not found with email: " + email);
+        }
+        return user;
     }
 }
