@@ -6,7 +6,7 @@ import com.resilienttasks.resilient_user_service.dto.auth.LoginRequest;
 import com.resilienttasks.resilient_user_service.dto.auth.RegisterRequest;
 import com.resilienttasks.resilient_user_service.entity.User;
 import com.resilienttasks.resilient_user_service.config.JwtUtils;
-import com.resilienttasks.resilient_user_service.exception.*;
+import com.resilienttasks.resilient_user_service.validations.*;
 
 
 @Service
@@ -21,9 +21,7 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest loginRequest) {
         var user = userService.findByEmail(loginRequest.getEmail());
-        if (!user.getPassword().equals(loginRequest.getPassword())) {
-            throw new ForbiddenException("Invalid password for user: " + loginRequest.getEmail());
-        }
+        Validations.validatePassword(user.getEmail(), loginRequest.getPassword(), user.getPassword());
         String token = jwtUtils.generateToken(user.getEmail());
         return AuthResponse.builder()
         .token(token)
@@ -35,11 +33,8 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest registerRequest) {
-        if (userService.findByEmail(registerRequest.getEmail()) != null) {
-            throw new BadRequestException("User already exists with email: " + registerRequest.getEmail());
-        }
-        User user = User.builder()
-        .name(registerRequest.getName())
+        Validations.validateEmail(userService.findByEmail(registerRequest.getEmail()));
+        User user = User.builder().name(registerRequest.getName())
         .lastName(registerRequest.getLastName())
         .email(registerRequest.getEmail())
         .password(registerRequest.getPassword())
@@ -47,6 +42,7 @@ public class AuthService {
         .createdAt(String.valueOf(System.currentTimeMillis()))
         .updatedAt(String.valueOf(System.currentTimeMillis()))
         .build();
+        
         String token = jwtUtils.generateToken(user.getEmail());
 
         userService.createUser(user);

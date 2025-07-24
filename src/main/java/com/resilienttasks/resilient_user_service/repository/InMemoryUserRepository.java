@@ -31,4 +31,23 @@ public class InMemoryUserRepository implements UserRepository {
     public List<User> findAll() {
         return new ArrayList<>(users.values());
     }
+
+    @Override
+    public User findById(Long id) {
+        return users.values().stream()
+            .filter(user -> user.getId().equals(id))
+            .findFirst()
+            .orElse(null);
+    }
+
+    @Override
+    public User update(User user) {
+        users.put(user.getEmail(), user);
+        return user;
+    }
+
+    @Override
+    public void delete(User user) {
+        users.remove(user.getEmail());
+    }
 } 
