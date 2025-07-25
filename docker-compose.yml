@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  user-service:
+    image: resilient-user-service:1
+    ports:
+      - 8080:8080
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/resilient_tasks_db
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - resilient-tasks-network
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=resilient_tasks_db
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - resilient-tasks-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+networks:
+  resilient-tasks-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
