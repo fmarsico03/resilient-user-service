@@ -13,7 +13,7 @@ public class User {
     private String lastName;
     private String email;
     private String password;
-    private String role;
+    private Rol role;
     private String createdAt;
     private String updatedAt;
 }

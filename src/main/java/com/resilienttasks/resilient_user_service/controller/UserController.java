@@ -15,6 +15,8 @@ import com.resilienttasks.resilient_user_service.service.UserService;
 import com.resilienttasks.resilient_user_service.dto.user.UserResponse;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/users")
@@ -26,6 +28,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         List<User> users = userService.getAllUsers();
@@ -36,19 +39,20 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
-        User user = userService.findById(id);
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id, Authentication authentication) {
+        User user = userService.findById(id, authentication);
         return ResponseEntity.ok(convertToUserResponse(user));
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id, Authentication authentication) {
+        userService.deleteUser(id, authentication);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody UserUpdateRequest updateUserRequest) {
-        User user = userService.updateUser(id, updateUserRequest);
+    public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody UserUpdateRequest updateUserRequest, Authentication authentication) {
+        User user = userService.updateUser(id, updateUserRequest, authentication);
         return ResponseEntity.ok(convertToUserResponse(user));
     }
 
@@ -59,7 +63,7 @@ public class UserController {
             .name(user.getName())
             .lastName(user.getLastName())
             .email(user.getEmail())
-            .role(user.getRole())
+            .role(user.getRole().name())
             .createdAt(user.getCreatedAt())
             .updatedAt(user.getUpdatedAt())
             .build();

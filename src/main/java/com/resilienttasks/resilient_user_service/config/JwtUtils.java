@@ -8,19 +8,25 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
+
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import com.resilienttasks.resilient_user_service.entity.Rol;
+
 import lombok.Getter;
 
 @Component
 @Getter
 public class JwtUtils {
 
-    private final String SECRET = "resilienttasksresilienttasksresilienttasks"; // mínimo 256 bits
+    private final String SECRET = "resilienttasksresilienttasksresilienttasks";
 
-    private final long EXPIRATION_MS = 86400000; // 24h
+    private final long EXPIRATION_MS = 86400000;
 
-    public String generateToken(String username) {
+    public String generateToken(String username, Rol role) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("role", role.name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
                 .signWith(getKey())
@@ -37,9 +43,11 @@ public class JwtUtils {
     }
 
     public Authentication getAuthentication(String token) {
-        String username = Jwts.parserBuilder().setSigningKey(getKey()).build()
-                .parseClaimsJws(token).getBody().getSubject();
-        return new UsernamePasswordAuthenticationToken(username, null, java.util.Collections.emptyList());
+        Claims claims = Jwts.parserBuilder().setSigningKey(getKey()).build()    
+                .parseClaimsJws(token).getBody();
+        String username = claims.getSubject();
+        String role = claims.get("role", String.class);
+        return new UsernamePasswordAuthenticationToken(username, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
     }
 
     private Key getKey() {

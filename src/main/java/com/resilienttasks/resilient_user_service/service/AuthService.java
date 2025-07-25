@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import com.resilienttasks.resilient_user_service.dto.auth.AuthResponse;
 import com.resilienttasks.resilient_user_service.dto.auth.LoginRequest;
 import com.resilienttasks.resilient_user_service.dto.auth.RegisterRequest;
-import com.resilienttasks.resilient_user_service.entity.User;
+import com.resilienttasks.resilient_user_service.entity.*;
 import com.resilienttasks.resilient_user_service.config.JwtUtils;
 import com.resilienttasks.resilient_user_service.validations.*;
 
@@ -22,13 +22,13 @@ public class AuthService {
     public AuthResponse login(LoginRequest loginRequest) {
         var user = userService.findByEmail(loginRequest.getEmail());
         Validations.validatePassword(user.getEmail(), loginRequest.getPassword(), user.getPassword());
-        String token = jwtUtils.generateToken(user.getEmail());
+        String token = jwtUtils.generateToken(user.getEmail(), user.getRole());
         return AuthResponse.builder()
         .token(token)
         .expiresIn(jwtUtils.getEXPIRATION_MS()/1000)
         .userId(user.getId())
         .email(user.getEmail())
-        .role(user.getRole())
+        .role(user.getRole().name())
         .build();
     }
 
@@ -38,12 +38,12 @@ public class AuthService {
         .lastName(registerRequest.getLastName())
         .email(registerRequest.getEmail())
         .password(registerRequest.getPassword())
-        .role("USER")
+        .role(Rol.BASIC)
         .createdAt(String.valueOf(System.currentTimeMillis()))
         .updatedAt(String.valueOf(System.currentTimeMillis()))
         .build();
         
-        String token = jwtUtils.generateToken(user.getEmail());
+        String token = jwtUtils.generateToken(user.getEmail(), user.getRole());
 
         userService.createUser(user);
         return AuthResponse.builder()
@@ -51,7 +51,7 @@ public class AuthService {
         .expiresIn(jwtUtils.getEXPIRATION_MS()/1000)
         .userId(user.getId())
         .email(user.getEmail())
-        .role(user.getRole())
+        .role(user.getRole().name())
         .build();
     }
 }
