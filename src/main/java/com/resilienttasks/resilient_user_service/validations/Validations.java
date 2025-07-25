@@ -4,13 +4,13 @@ import com.resilienttasks.resilient_user_service.entity.*;
 import com.resilienttasks.resilient_user_service.exception.BadRequestException;
 import com.resilienttasks.resilient_user_service.exception.ForbiddenException;
 import com.resilienttasks.resilient_user_service.exception.NotFoundException;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 public class Validations {
 
-    public static void validatePassword(String email, String requierd, String actual) {
-        if (!actual.equals(requierd)) {
+    public static void validatePassword(String email, String rawPassword, String encodedPassword, PasswordEncoder passwordEncoder) {
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
             throw new ForbiddenException("Invalid password for user: " + email);
         }
     }

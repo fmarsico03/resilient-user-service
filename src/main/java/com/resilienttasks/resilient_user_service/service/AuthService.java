@@ -7,21 +7,23 @@ import com.resilienttasks.resilient_user_service.dto.auth.RegisterRequest;
 import com.resilienttasks.resilient_user_service.entity.*;
 import com.resilienttasks.resilient_user_service.config.JwtUtils;
 import com.resilienttasks.resilient_user_service.validations.*;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class AuthService {
     private final UserService userService;
     private final JwtUtils jwtUtils;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthService(UserService userService, JwtUtils jwtUtils) {
+    public AuthService(UserService userService, JwtUtils jwtUtils, PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.jwtUtils = jwtUtils;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public AuthResponse login(LoginRequest loginRequest) {
         var user = userService.findByEmail(loginRequest.getEmail());
-        Validations.validatePassword(user.getEmail(), loginRequest.getPassword(), user.getPassword());
+        Validations.validatePassword(user.getEmail(), loginRequest.getPassword(), user.getPassword(), passwordEncoder);
         String token = jwtUtils.generateToken(user.getEmail(), user.getRole());
         return AuthResponse.builder()
         .token(token)
@@ -37,7 +39,7 @@ public class AuthService {
         User user = User.builder().name(registerRequest.getName())
         .lastName(registerRequest.getLastName())
         .email(registerRequest.getEmail())
-        .password(registerRequest.getPassword())
+        .password(passwordEncoder.encode(registerRequest.getPassword()))
         .role(Rol.BASIC)
         .createdAt(String.valueOf(System.currentTimeMillis()))
         .updatedAt(String.valueOf(System.currentTimeMillis()))

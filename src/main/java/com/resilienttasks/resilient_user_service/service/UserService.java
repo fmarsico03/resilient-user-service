@@ -4,7 +4,6 @@ import java.util.List;
 import com.resilienttasks.resilient_user_service.entity.*;
 import com.resilienttasks.resilient_user_service.repository.UserRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Qualifier;
 import com.resilienttasks.resilient_user_service.validations.Validations;
 import com.resilienttasks.resilient_user_service.dto.user.UserUpdateRequest;
 import org.springframework.security.core.Authentication;
@@ -13,7 +12,7 @@ import org.springframework.security.core.Authentication;
 public class UserService {
     private final UserRepository userRepository;
 
-    public UserService(@Qualifier("InMemoryUserRepository") UserRepository userRepository) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -27,7 +26,7 @@ public class UserService {
 
     public User findById(Long id, Authentication authentication) {
         Validations.notNull(id, "Id");
-        User user = userRepository.findById(id);
+        User user = userRepository.findById(id).orElse(null);
         Validations.notFoundUser(user, "Id: " + id.toString());
         Validations.authorizeSelfOrAdmin(this.getCurrentUser(authentication), user);
         return user;
@@ -35,7 +34,7 @@ public class UserService {
 
     public void deleteUser(Long id, Authentication authentication) {
         Validations.notNull(id, "Id");
-        User user = userRepository.findById(id);
+        User user = userRepository.findById(id).orElse(null);
         Validations.notFoundUser(user, "Id: " + id.toString());
         Validations.authorizeSelfOrAdmin(this.getCurrentUser(authentication), user);
         userRepository.delete(user);
@@ -43,7 +42,7 @@ public class UserService {
 
     public User updateUser(Long id, UserUpdateRequest userUpdateRequest, Authentication authentication) {
         Validations.notNull(id, "Id");
-        User existingUser = userRepository.findById(id);
+        User existingUser = userRepository.findById(id).orElse(null);
         Validations.notFoundUser(existingUser, id.toString());
         User currentUser = this.getCurrentUser(authentication);
         Validations.authorizeSelfOrAdmin(currentUser, existingUser);
@@ -62,7 +61,7 @@ public class UserService {
         if (userUpdateRequest.getRole() != null && currentUser.getRole().equals(Rol.ADMIN)) {
             existingUser.setRole(userUpdateRequest.getRole());
         }
-        userRepository.update(existingUser);
+        userRepository.save(existingUser);
         return existingUser;
     }
 
