@@ -16,23 +16,24 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public void createUser(User user) {
+    public User createUser(User user) {
         userRepository.save(user);
+        return user;
     }
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    public User findById(Long id, Authentication authentication) {
+    public User findById(String id, Authentication authentication) {
         Validations.notNull(id, "Id");
         User user = userRepository.findById(id).orElse(null);
-        Validations.notFoundUser(user, "Id: " + id.toString());
+        Validations.notFoundUser(user, "Id: " + id);
         Validations.authorizeSelfOrAdmin(this.getCurrentUser(authentication), user);
         return user;
     }
 
-    public void deleteUser(Long id, Authentication authentication) {
+    public void deleteUser(String id, Authentication authentication) {
         Validations.notNull(id, "Id");
         User user = userRepository.findById(id).orElse(null);
         Validations.notFoundUser(user, "Id: " + id.toString());
@@ -40,7 +41,7 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    public User updateUser(Long id, UserUpdateRequest userUpdateRequest, Authentication authentication) {
+    public User updateUser(String id, UserUpdateRequest userUpdateRequest, Authentication authentication) {
         Validations.notNull(id, "Id");
         User existingUser = userRepository.findById(id).orElse(null);
         Validations.notFoundUser(existingUser, id.toString());
@@ -72,8 +73,12 @@ public class UserService {
     }
 
     private User getCurrentUser(Authentication authentication) {
-        User currentUser = this.findByEmail(authentication.getName());
-        Validations.notFoundUser(currentUser, "Current user with email: " + authentication.getName());
+        User currentUser = this.findUserById(authentication.getName());
+        Validations.notFoundUser(currentUser, "Current user with ID: " + authentication.getName());
         return currentUser;
+    }
+
+    private User findUserById(String id) {
+        return userRepository.findById(id).orElse(null);
     }
 }

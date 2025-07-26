@@ -39,19 +39,19 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id, Authentication authentication) {
+    public ResponseEntity<UserResponse> getUserById(@PathVariable String id, Authentication authentication) {
         User user = userService.findById(id, authentication);
         return ResponseEntity.ok(convertToUserResponse(user));
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id, Authentication authentication) {
+    public ResponseEntity<Void> deleteUser(@PathVariable String id, Authentication authentication) {
         userService.deleteUser(id, authentication);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody UserUpdateRequest updateUserRequest, Authentication authentication) {
+    public ResponseEntity<UserResponse> updateUser(@PathVariable String id, @RequestBody UserUpdateRequest updateUserRequest, Authentication authentication) {
         User user = userService.updateUser(id, updateUserRequest, authentication);
         return ResponseEntity.ok(convertToUserResponse(user));
     }

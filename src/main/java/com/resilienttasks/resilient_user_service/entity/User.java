@@ -6,8 +6,6 @@ import lombok.Setter;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
@@ -23,8 +21,8 @@ import lombok.AllArgsConstructor;
 @Table(name = "users")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(columnDefinition = "VARCHAR(36)")
+    private String  id;    
     private String name;
     private String lastName;
     @Column(unique = true, nullable = false)

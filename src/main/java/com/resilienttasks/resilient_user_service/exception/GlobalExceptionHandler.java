@@ -7,7 +7,6 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import com.resilienttasks.resilient_user_service.dto.ErrorResponse;
 import java.time.LocalDateTime;
-import com.resilienttasks.resilient_user_service.exception.*;
 
 
 @ControllerAdvice

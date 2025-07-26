@@ -8,21 +8,15 @@ import org.springframework.http.ResponseEntity;
 import com.resilienttasks.resilient_user_service.dto.auth.AuthResponse;
 import com.resilienttasks.resilient_user_service.dto.auth.LoginRequest;
 import com.resilienttasks.resilient_user_service.dto.auth.RegisterRequest;
-import com.resilienttasks.resilient_user_service.service.UserService;
-import com.resilienttasks.resilient_user_service.config.JwtUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import com.resilienttasks.resilient_user_service.service.AuthService;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    private final UserService userService;
-    private final JwtUtils jwtUtils;
     private final AuthService authService;
 
-    public AuthController(UserService userService, JwtUtils jwtUtils, AuthService authService) {
-        this.userService = userService;
-        this.jwtUtils = jwtUtils;
+    public AuthController(AuthService authService) {
         this.authService = authService;
     }
 

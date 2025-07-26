@@ -2,11 +2,14 @@ package com.resilienttasks.resilient_user_service.config;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import jakarta.annotation.PostConstruct;
 import java.util.Date;
 import java.util.List;
 
@@ -19,14 +22,23 @@ import lombok.Getter;
 @Getter
 public class JwtUtils {
 
-    private final String SECRET = "resilienttasksresilienttasksresilienttasks";
+    @Value("${jwt.secret}")
+    private String SECRET;
 
-    private final long EXPIRATION_MS = 86400000;
+    @Value("${jwt.expiration-ms}")
+    private long EXPIRATION_MS;
 
-    public String generateToken(String username, Rol role) {
+    @PostConstruct
+    public void validateSecret() {
+        if (SECRET.length() < 32) {
+            throw new IllegalArgumentException("JWT secret must be at least 32 characters long (256 bits)");
+        }
+    }
+    public String generateToken(String id, Rol role, String email) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(id)
                 .claim("role", role.name())
+                .claim("email", email)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
                 .signWith(getKey())
@@ -45,9 +57,9 @@ public class JwtUtils {
     public Authentication getAuthentication(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(getKey()).build()    
                 .parseClaimsJws(token).getBody();
-        String username = claims.getSubject();
+        String id = claims.getSubject();
         String role = claims.get("role", String.class);
-        return new UsernamePasswordAuthenticationToken(username, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+        return new UsernamePasswordAuthenticationToken(id, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
     }
 
     private Key getKey() {

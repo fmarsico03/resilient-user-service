@@ -8,6 +8,7 @@ import com.resilienttasks.resilient_user_service.entity.*;
 import com.resilienttasks.resilient_user_service.config.JwtUtils;
 import com.resilienttasks.resilient_user_service.validations.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -24,7 +25,7 @@ public class AuthService {
     public AuthResponse login(LoginRequest loginRequest) {
         var user = userService.findByEmail(loginRequest.getEmail());
         Validations.validatePassword(user.getEmail(), loginRequest.getPassword(), user.getPassword(), passwordEncoder);
-        String token = jwtUtils.generateToken(user.getEmail(), user.getRole());
+        String token = jwtUtils.generateToken(user.getId(), user.getRole(), user.getEmail());
         return AuthResponse.builder()
         .token(token)
         .expiresIn(jwtUtils.getEXPIRATION_MS()/1000)
@@ -37,6 +38,7 @@ public class AuthService {
     public AuthResponse register(RegisterRequest registerRequest) {
         Validations.validateEmail(userService.findByEmail(registerRequest.getEmail()));
         User user = User.builder().name(registerRequest.getName())
+        .id(UUID.randomUUID().toString())
         .lastName(registerRequest.getLastName())
         .email(registerRequest.getEmail())
         .password(passwordEncoder.encode(registerRequest.getPassword()))
@@ -45,13 +47,13 @@ public class AuthService {
         .updatedAt(String.valueOf(System.currentTimeMillis()))
         .build();
         
-        String token = jwtUtils.generateToken(user.getEmail(), user.getRole());
+        User savedUser = userService.createUser(user);
+        String token = jwtUtils.generateToken(savedUser.getId(), savedUser.getRole(), savedUser.getEmail());
 
-        userService.createUser(user);
         return AuthResponse.builder()
         .token(token)
         .expiresIn(jwtUtils.getEXPIRATION_MS()/1000)
-        .userId(user.getId())
+        .userId(savedUser.getId())
         .email(user.getEmail())
         .role(user.getRole().name())
         .build();
