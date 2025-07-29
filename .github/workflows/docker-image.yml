@@ -21,6 +21,9 @@ jobs:
       - name: Set Docker Image
         run: echo "DOCKER_IMAGE=${{ vars.DOCKER_HUB_NAME }}/${{ env.SERVICE_NAME }}" >> $GITHUB_ENV
 
+      - name: Build APP
+        run: mvn clean package -DskipTests
+
       - name: Build image
         run: docker build ./ -t $DOCKER_IMAGE:$VERSION
 
